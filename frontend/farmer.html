@@ -20,6 +20,7 @@
       <a href="/" class="navlink text-gray-600">Home</a>
       <a href="/farmer" class="navlink text-green-700">I'm a Farmer</a>
       <a href="/buyer" class="navlink text-gray-600">I'm a Buyer</a>
+      <a href="/about" class="navlink text-gray-600">About</a>
     </div>
   </div>
 </nav>
@@ -73,6 +74,16 @@
       <p id="modelNote" class="text-xs text-gray-400 mt-2"></p>
     </div>
 
+    <div id="rupeePanel" class="card p-6 hidden">
+      <h2 class="text-lg font-bold mb-1">Where the Consumer Rupee Goes</h2>
+      <p class="text-sm text-gray-500 mb-4">Based on the commodity and price you've entered on the left</p>
+      <div id="rupeeSavings" class="bg-green-50 border border-green-100 rounded-lg p-3 text-sm mb-4 hidden"></div>
+      <div id="rupeeBreakdown" class="hidden">
+        <p class="text-sm font-semibold mb-2">Full stakeholder split (RBI TOP study)</p>
+        <canvas id="rupeeBreakdownChart" height="55"></canvas>
+      </div>
+    </div>
+
     <div class="card p-6">
       <h2 class="text-lg font-bold mb-4">Your Listings (demo: all listings shown)</h2>
       <div id="listingsTable" class="space-y-3"></div>
@@ -83,6 +94,7 @@
 <script src="/static/app.js"></script>
 <script>
 let forecastChart;
+let rupeeBreakdownChart = null;
 let commodityData = {};
 
 const DISTRICTS = ["Nashik","Pune","Nagpur","Ahmednagar","Solapur","Kolhapur","Satara","Sangli",
@@ -99,6 +111,8 @@ async function init() {
   sel.addEventListener('change', onCommodityChange);
   onCommodityChange();
 
+  document.getElementById('priceInput').addEventListener('input', updateRupeePanel);
+
   const distSel = document.getElementById('districtSelect');
   distSel.innerHTML = DISTRICTS.map(d => `<option value="${d}">${d}</option>`).join('');
   distSel.addEventListener('change', onDistrictChange);
@@ -114,6 +128,64 @@ function onCommodityChange() {
   document.getElementById('priceHint').textContent =
     `Recent avg mandi price for ${name}: ${formatRs(c.avg_mandi_price)}/quintal. You can list higher or lower.`;
   renderForecast(c);
+  updateRupeePanel();
+}
+
+async function updateRupeePanel() {
+  const commodity = document.getElementById('commoditySelect').value;
+  const price = parseFloat(document.getElementById('priceInput').value) || 0;
+  const panel = document.getElementById('rupeePanel');
+  const savingsEl = document.getElementById('rupeeSavings');
+  const breakdownWrap = document.getElementById('rupeeBreakdown');
+
+  savingsEl.classList.add('hidden');
+  breakdownWrap.classList.add('hidden');
+  if (rupeeBreakdownChart) {
+    rupeeBreakdownChart.destroy();
+    rupeeBreakdownChart = null;
+  }
+
+  let shown = false;
+
+  try {
+    const savings = await apiGet(`/api/savings?commodity=${encodeURIComponent(commodity)}&farmer_price=${price}`);
+    savingsEl.innerHTML =
+      `Through the traditional mandi chain, this would reach the consumer at <b>${formatRs(savings.traditional_consumer_price)}</b>/qtl. ` +
+      `On KisanLink it's <b>${formatRs(savings.platform_consumer_price)}</b>/qtl — ` +
+      `<span class="text-green-700 font-semibold">${savings.consumer_savings_pct}% cheaper for the buyer</span>, with more of that reaching you directly.`;
+    savingsEl.classList.remove('hidden');
+    shown = true;
+  } catch (e) { /* no farmer-share benchmark published for this commodity */ }
+
+  try {
+    const breakdown = await apiGet(`/api/stakeholder-breakdown/${encodeURIComponent(commodity)}`);
+    const ctx = document.getElementById('rupeeBreakdownChart');
+    rupeeBreakdownChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Consumer rupee'],
+        datasets: [
+          { label: 'Farmer (you)', data: [breakdown.farmer_pct], backgroundColor: '#16a34a' },
+          { label: 'Trader', data: [breakdown.trader_pct], backgroundColor: '#f59e0b' },
+          { label: 'Wholesaler', data: [breakdown.wholesaler_pct], backgroundColor: '#3b82f6' },
+          { label: 'Retailer', data: [breakdown.retailer_pct], backgroundColor: '#8b5cf6' },
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } },
+        scales: {
+          x: { stacked: true, min: 0, max: 100, ticks: { callback: value => `${value}%` } },
+          y: { stacked: true, display: false }
+        }
+      }
+    });
+    breakdownWrap.classList.remove('hidden');
+    shown = true;
+  } catch (e) { /* no full stakeholder breakdown published for this commodity */ }
+
+  panel.classList.toggle('hidden', !shown);
 }
 
 async function onDistrictChange() {

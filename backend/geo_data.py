@@ -68,3 +68,87 @@ def nearest_hub(district: str):
         "distance_km": round(dist_km, 1),
         "estimated_transit_hours": est_hours,
     }
+
+
+def _field(listing, key):
+    """Read `key` from a listing that may be a dict or an object (e.g. an ORM row)."""
+    if isinstance(listing, dict):
+        return listing.get(key)
+    return getattr(listing, key, None)
+
+
+def build_pickup_routes(listings):
+    """Group listings by nearest hub and build one consolidated pickup route
+    per hub, versus the baseline of every district making its own
+    independent round trip to the hub.
+
+    Each route is a greedy nearest-neighbor traversal starting and ending at
+    the hub: not guaranteed optimal, but always at least as short as visiting
+    the same stops in an arbitrary order, and it never revisits a district.
+
+    Returns a dict keyed by hub name, each value containing the ordered
+    stops (district, listing ids, quantity), the consolidated route
+    distance, the independent-trips baseline distance, and the percentage
+    distance saved by consolidating.
+    """
+    hub_groups = {}  # hub_name -> {district: {"listing_ids": [...], "quantity_quintal": total}}
+
+    for listing in listings:
+        district = _field(listing, "district")
+        hub_info = nearest_hub(district)
+        if hub_info is None:
+            continue  # district not in our coordinate table -- can't route it
+        hub_name = hub_info["hub"]
+        district_entry = hub_groups.setdefault(hub_name, {}).setdefault(
+            district, {"listing_ids": [], "quantity_quintal": 0.0}
+        )
+        district_entry["listing_ids"].append(_field(listing, "id"))
+        district_entry["quantity_quintal"] += _field(listing, "quantity_quintal") or 0.0
+
+    routes = {}
+    for hub_name, districts in hub_groups.items():
+        hub_lat, hub_lon = COLLECTION_HUBS[hub_name]
+
+        # Baseline: each district makes its own independent round trip to the hub.
+        independent_total_km = sum(
+            2 * haversine_km(hub_lat, hub_lon, *DISTRICT_COORDS[district])
+            for district in districts
+        )
+
+        # Greedy nearest-neighbor route: hub -> ... -> hub.
+        remaining = set(districts.keys())
+        cur_lat, cur_lon = hub_lat, hub_lon
+        order = []
+        route_total_km = 0.0
+        while remaining:
+            next_district = min(
+                remaining,
+                key=lambda d: haversine_km(cur_lat, cur_lon, *DISTRICT_COORDS[d]),
+            )
+            route_total_km += haversine_km(cur_lat, cur_lon, *DISTRICT_COORDS[next_district])
+            cur_lat, cur_lon = DISTRICT_COORDS[next_district]
+            order.append(next_district)
+            remaining.remove(next_district)
+        route_total_km += haversine_km(cur_lat, cur_lon, hub_lat, hub_lon)  # last leg back to hub
+
+        distance_saved_pct = (
+            round((independent_total_km - route_total_km) / independent_total_km * 100, 1)
+            if independent_total_km > 0 else 0.0
+        )
+
+        routes[hub_name] = {
+            "hub": hub_name,
+            "stops": [
+                {
+                    "district": d,
+                    "listing_ids": districts[d]["listing_ids"],
+                    "quantity_quintal": round(districts[d]["quantity_quintal"], 1),
+                }
+                for d in order
+            ],
+            "route_distance_km": round(route_total_km, 1),
+            "independent_distance_km": round(independent_total_km, 1),
+            "distance_saved_pct": distance_saved_pct,
+        }
+
+    return routes

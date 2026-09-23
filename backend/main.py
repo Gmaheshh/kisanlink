@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 
 from database import Base, engine, get_db
 import models
-from geo_data import nearest_hub, DISTRICT_COORDS
+from geo_data import nearest_hub, DISTRICT_COORDS, build_pickup_routes
 from assistant import router as assistant_router
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -111,6 +111,43 @@ def get_nearest_hub(district: str):
     if not hub:
         raise HTTPException(404, "District not recognized")
     return hub
+
+
+@app.get("/api/logistics/consolidated-routes")
+def get_consolidated_routes(db: Session = Depends(get_db)):
+    """Group all open/partially-sold listings heading to the same collection
+    hub into a shared pickup route, versus every farmer traveling to the hub
+    independently. Distances are real haversine distances between district
+    centroids and hub coordinates -- see geo_data.build_pickup_routes()."""
+    listings = (
+        db.query(models.Listing)
+        .filter(models.Listing.status.in_(["open", "partially_sold"]))
+        .all()
+    )
+    listing_rows = [
+        {
+            "id": l.id,
+            "district": l.district,
+            "quantity_quintal": l.quantity_quintal - sum(o.quantity_ordered for o in l.orders),
+        }
+        for l in listings
+    ]
+    routes = build_pickup_routes(listing_rows)
+
+    total_independent_km = sum(r["independent_distance_km"] for r in routes.values())
+    total_route_km = sum(r["route_distance_km"] for r in routes.values())
+    overall_distance_saved_pct = (
+        round((total_independent_km - total_route_km) / total_independent_km * 100, 1)
+        if total_independent_km > 0 else None
+    )
+
+    return {
+        "hubs": list(routes.values()),
+        "total_listings_routed": len(listing_rows),
+        "total_independent_distance_km": round(total_independent_km, 1),
+        "total_route_distance_km": round(total_route_km, 1),
+        "overall_distance_saved_pct": overall_distance_saved_pct,
+    }
 
 
 @app.get("/api/savings")
@@ -272,3 +309,8 @@ def serve_farmer():
 @app.get("/buyer")
 def serve_buyer():
     return FileResponse(os.path.join(FRONTEND_DIR, "buyer.html"))
+
+
+@app.get("/about")
+def serve_about():
+    return FileResponse(os.path.join(FRONTEND_DIR, "about.html"))

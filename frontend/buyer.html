@@ -20,6 +20,7 @@
       <a href="/" class="navlink text-gray-600">Home</a>
       <a href="/farmer" class="navlink text-gray-600">I'm a Farmer</a>
       <a href="/buyer" class="navlink text-green-700">I'm a Buyer</a>
+      <a href="/about" class="navlink text-gray-600">About</a>
     </div>
   </div>
 </nav>
@@ -39,6 +40,18 @@
         <option value="">All districts</option>
       </select>
     </div>
+  </div>
+
+  <div id="routesPanel" class="card p-5 mb-8 hidden">
+    <div class="flex items-center justify-between mb-1">
+      <h2 class="font-bold text-lg">🚚 Today's Consolidated Pickup Routes</h2>
+      <span id="routesOverallBadge" class="text-sm font-semibold text-green-700"></span>
+    </div>
+    <p class="text-xs text-gray-500 mb-4">
+      Instead of every farmer traveling to their nearest hub independently, KisanLink groups
+      open listings heading to the same hub into one truck route.
+    </p>
+    <div id="routesList" class="grid md:grid-cols-2 gap-4"></div>
   </div>
 
   <div id="listingsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
@@ -108,6 +121,38 @@ async function init() {
   dSel.addEventListener('change', render);
 
   await loadListings();
+}
+
+async function loadConsolidatedRoutes() {
+  try {
+    const data = await apiGet('/api/logistics/consolidated-routes');
+    if (!data.hubs || data.hubs.length === 0) return;
+
+    document.getElementById('routesOverallBadge').textContent =
+      data.overall_distance_saved_pct !== null
+        ? `~${data.overall_distance_saved_pct}% less distance overall`
+        : '';
+
+    document.getElementById('routesList').innerHTML = data.hubs.map(h => {
+      const stopCount = h.stops.length;
+      const listingCount = h.stops.reduce((sum, s) => sum + s.listing_ids.length, 0);
+      const qty = h.stops.reduce((sum, s) => sum + s.quantity_quintal, 0);
+      return `
+      <div class="border rounded-lg p-4">
+        <div class="flex items-center justify-between mb-1">
+          <p class="font-semibold text-sm">${h.hub}</p>
+          <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">${h.distance_saved_pct}% shorter</span>
+        </div>
+        <p class="text-xs text-gray-500 mb-2">Route: hub → ${h.stops.map(s => s.district).join(' → ')} → hub</p>
+        <p class="text-xs text-gray-400">
+          ${h.route_distance_km} km consolidated vs ${h.independent_distance_km} km independently ·
+          ${stopCount} stop${stopCount === 1 ? '' : 's'}, ${listingCount} listing${listingCount === 1 ? '' : 's'}, ${qty.toFixed(0)} qtl
+        </p>
+      </div>`;
+    }).join('');
+
+    document.getElementById('routesPanel').classList.remove('hidden');
+  } catch (e) { /* hide silently if unavailable */ }
 }
 
 async function loadListings() {
@@ -271,6 +316,7 @@ document.getElementById('orderForm').addEventListener('submit', async (e) => {
 });
 
 init();
+loadConsolidatedRoutes();
 </script>
 <script src="/static/chatbot.js"></script>
 </body>

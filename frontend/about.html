@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KisanLink — About &amp; What Makes It Different</title>
+<link rel="stylesheet" href="/static/vendor/tailwind.css" />
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="text-gray-800">
+
+<nav class="bg-white border-b sticky top-0 z-10">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">🌾</span>
+      <span class="text-xl font-bold text-green-800">KisanLink</span>
+    </div>
+    <div class="flex gap-6 text-sm font-medium">
+      <a href="/" class="navlink text-gray-600">Home</a>
+      <a href="/farmer" class="navlink text-gray-600">I'm a Farmer</a>
+      <a href="/buyer" class="navlink text-gray-600">I'm a Buyer</a>
+      <a href="/about" class="navlink text-green-700">About</a>
+    </div>
+  </div>
+</nav>
+
+<header class="bg-gradient-to-b from-green-50 to-white py-14">
+  <div class="max-w-4xl mx-auto px-6 text-center">
+    <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
+      Not another listing app.<br/><span class="text-green-700">A transparency engine for the mandi system.</span>
+    </h1>
+    <p class="mt-5 text-lg text-gray-600">
+      KisanLink was built for SIH 2026, Problem Statement 26033: "multiple intermediaries reduce
+      farmers' earnings and increase consumer prices." Most solutions to that problem stop at
+      "connect farmer to buyer." KisanLink goes further — every number on this site is computed
+      from real data, not assumed.
+    </p>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-14 space-y-16">
+
+  <section>
+    <h2 class="text-2xl font-bold mb-6">What's actually novel here</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="card p-6">
+        <div class="text-3xl mb-2">📊</div>
+        <h3 class="font-bold text-lg mb-1">Real data, not a mockup</h3>
+        <p class="text-sm text-gray-600">
+          16 years (2010–2025) of daily Maharashtra mandi prices across 20 commodities —
+          100,907 records sourced from Agmarknet via CEDA (Ashoka University). Most student
+          prototypes for this problem statement use invented sample numbers; every price,
+          forecast, and benchmark here traces back to a cited source.
+        </p>
+      </div>
+      <div class="card p-6">
+        <div class="text-3xl mb-2">🎯</div>
+        <h3 class="font-bold text-lg mb-1">Forecasting that reports its own accuracy</h3>
+        <p class="text-sm text-gray-600">
+          Both ARIMA and seasonal SARIMA are grid-searched per commodity and evaluated on a
+          genuine 6-month holdout — whichever generalizes better is kept, and its holdout MAPE
+          is shown, not hidden. Mango's forecast is flagged as unreliable rather than smoothed
+          over, because a model that admits its limits is more useful than one that doesn't.
+        </p>
+      </div>
+      <div class="card p-6">
+        <div class="text-3xl mb-2">🔍</div>
+        <h3 class="font-bold text-lg mb-1">Stakeholder-level price transparency</h3>
+        <p class="text-sm text-gray-600">
+          Beyond a single "farmer vs. consumer" split, Tomato/Onion/Potato get the full
+          RBI "TOP" study breakdown — farmer, trader, wholesaler, and retailer share of the
+          consumer rupee — visible to farmers <em>before</em> they price their listing, not
+          buried in a report.
+        </p>
+      </div>
+      <div class="card p-6">
+        <div class="text-3xl mb-2">🚚</div>
+        <h3 class="font-bold text-lg mb-1">Logistics math, not a hardcoded number</h3>
+        <p class="text-sm text-gray-600">
+          Every listing is matched to its nearest of 7 real collection hubs by haversine
+          distance. Open listings heading to the same hub are then grouped into one
+          consolidated pickup route (greedy nearest-neighbor) and compared against everyone
+          traveling independently — the distance-saved percentage is computed fresh from
+          real coordinates every time, never a fixed marketing number.
+        </p>
+      </div>
+      <div class="card p-6">
+        <div class="text-3xl mb-2">🗣️</div>
+        <h3 class="font-bold text-lg mb-1">An assistant that speaks the farmer's language</h3>
+        <p class="text-sm text-gray-600">
+          An optional Claude-powered chat answers questions grounded in the app's live
+          listings and forecast data — and Sarvam AI adds voice input/output in Indian
+          languages, so a farmer can ask "onion ka bhaav kya hai" out loud instead of
+          navigating menus.
+        </p>
+      </div>
+      <div class="card p-6">
+        <div class="text-3xl mb-2">🤝</div>
+        <h3 class="font-bold text-lg mb-1">Honest about its own limits</h3>
+        <p class="text-sm text-gray-600">
+          The savings calculator uses RBI's published Terms of Trade study, not a live retail
+          feed, because that data source was down during development — and this app says so
+          plainly instead of quietly pretending otherwise. Trust is a feature.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold mb-6">Typical "farmer-to-consumer app" vs. KisanLink</h2>
+    <div class="card p-6 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-gray-500 border-b">
+            <th class="py-2 pr-4">Capability</th>
+            <th class="py-2 pr-4">Typical prototype</th>
+            <th class="py-2">KisanLink</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <tr>
+            <td class="py-3 pr-4 font-medium">Farmer↔buyer connection</td>
+            <td class="py-3 pr-4 text-gray-500">Yes</td>
+            <td class="py-3 text-green-700">Yes</td>
+          </tr>
+          <tr>
+            <td class="py-3 pr-4 font-medium">Price data</td>
+            <td class="py-3 pr-4 text-gray-500">Sample / invented</td>
+            <td class="py-3 text-green-700">100,907 real records, 2010–2025</td>
+          </tr>
+          <tr>
+            <td class="py-3 pr-4 font-medium">Price forecasting</td>
+            <td class="py-3 pr-4 text-gray-500">None, or unvalidated</td>
+            <td class="py-3 text-green-700">ARIMA/SARIMA with reported holdout accuracy</td>
+          </tr>
+          <tr>
+            <td class="py-3 pr-4 font-medium">Middlemen transparency</td>
+            <td class="py-3 pr-4 text-gray-500">Single "you save X%" claim</td>
+            <td class="py-3 text-green-700">Full 4-way RBI-benchmarked stakeholder split</td>
+          </tr>
+          <tr>
+            <td class="py-3 pr-4 font-medium">Logistics</td>
+            <td class="py-3 pr-4 text-gray-500">None, or a flat assumption</td>
+            <td class="py-3 text-green-700">Real hub matching + computed route consolidation savings</td>
+          </tr>
+          <tr>
+            <td class="py-3 pr-4 font-medium">Accessibility</td>
+            <td class="py-3 pr-4 text-gray-500">Text/English only</td>
+            <td class="py-3 text-green-700">Voice assistant in Indian languages</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card p-6">
+    <h2 class="text-xl font-bold mb-3">Honest limitations</h2>
+    <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5">
+      <li>Mango's ARIMA/SARIMA forecast has a high error rate — flagged, not hidden — because its price series is unusually volatile in ways a simple time-series model doesn't capture well.</li>
+      <li>The savings calculator uses RBI's published research benchmarks rather than a live retail price feed, since that source was unavailable during development.</li>
+      <li>This is a functional prototype (SQLite, single server) — a production deployment would need authentication, payments, a real logistics partner integration, and a managed database.</li>
+    </ul>
+  </section>
+
+  <section class="text-center text-sm text-gray-400">
+    KisanLink — SIH 2026 Prototype · Problem Statement 26033 · Data: Agmarknet / CEDA / RBI
+  </section>
+
+</main>
+
+<footer class="bg-white border-t py-8 text-center text-sm text-gray-400">
+  KisanLink — SIH 2026 Prototype · Problem Statement 26033 · Data: Agmarknet / CEDA / RBI
+</footer>
+
+<script src="/static/chatbot.js"></script>
+</body>
+</html>
