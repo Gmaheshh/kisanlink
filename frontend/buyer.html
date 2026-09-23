@@ -6,6 +6,7 @@
 <title>KisanLink — Buyer Marketplace</title>
 <link rel="stylesheet" href="/static/vendor/tailwind.css" />
 <link rel="stylesheet" href="/static/style.css" />
+<script src="/static/vendor/chart.umd.js"></script>
 </head>
 <body class="text-gray-800">
 
@@ -52,6 +53,10 @@
     <p id="modalListingInfo" class="text-sm text-gray-500 mb-4"></p>
 
     <div id="modalSavings" class="bg-green-50 border border-green-100 rounded-lg p-3 text-sm mb-4 hidden"></div>
+    <div id="stakeholderBreakdown" class="border border-gray-100 rounded-lg p-3 mb-4 hidden">
+      <p class="text-sm font-semibold mb-2">Where the consumer rupee goes (RBI TOP study)</p>
+      <canvas id="stakeholderChart" height="55"></canvas>
+    </div>
 
     <form id="orderForm" class="space-y-4">
       <input type="hidden" name="listing_id" id="orderListingId" />
@@ -88,6 +93,7 @@
 let allListings = [];
 let commodityData = {};
 let currentListing = null;
+let stakeholderChart = null;
 
 async function init() {
   const commodities = await apiGet('/api/commodities');
@@ -169,6 +175,11 @@ function openOrderModal(listingId) {
   document.getElementById('orderForm').classList.remove('hidden');
   document.getElementById('orderConfirm').classList.add('hidden');
   document.getElementById('orderMsg').textContent = '';
+  document.getElementById('stakeholderBreakdown').classList.add('hidden');
+  if (stakeholderChart) {
+    stakeholderChart.destroy();
+    stakeholderChart = null;
+  }
 
   document.getElementById('orderListingId').value = currentListing.id;
   document.getElementById('modalListingInfo').textContent =
@@ -178,9 +189,40 @@ function openOrderModal(listingId) {
   document.getElementById('orderPrice').value = currentListing.expected_price_per_quintal;
 
   updateSavingsPreview();
+  updateStakeholderBreakdown();
 
   document.getElementById('orderModal').classList.remove('hidden');
   document.getElementById('orderModal').classList.add('flex');
+}
+
+async function updateStakeholderBreakdown() {
+  if (!currentListing) return;
+  try {
+    const breakdown = await apiGet(`/api/stakeholder-breakdown/${encodeURIComponent(currentListing.commodity)}`);
+    const ctx = document.getElementById('stakeholderChart');
+    stakeholderChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Consumer rupee'],
+        datasets: [
+          { label: 'Farmer', data: [breakdown.farmer_pct], backgroundColor: '#16a34a' },
+          { label: 'Trader', data: [breakdown.trader_pct], backgroundColor: '#f59e0b' },
+          { label: 'Wholesaler', data: [breakdown.wholesaler_pct], backgroundColor: '#3b82f6' },
+          { label: 'Retailer', data: [breakdown.retailer_pct], backgroundColor: '#8b5cf6' },
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } },
+        scales: {
+          x: { stacked: true, min: 0, max: 100, ticks: { callback: value => `${value}%` } },
+          y: { stacked: true, display: false }
+        }
+      }
+    });
+    document.getElementById('stakeholderBreakdown').classList.remove('hidden');
+  } catch (e) { /* hide when no full breakdown is published */ }
 }
 
 async function updateSavingsPreview() {

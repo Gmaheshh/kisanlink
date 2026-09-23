@@ -121,6 +121,17 @@ def get_savings(commodity: str, farmer_price: float):
     return result
 
 
+@app.get("/api/stakeholder-breakdown/{commodity}")
+def get_stakeholder_breakdown(commodity: str):
+    breakdown = COMMODITIES.get(commodity, {}).get("stakeholder_breakdown")
+    if not breakdown:
+        raise HTTPException(
+            404,
+            "No full stakeholder breakdown published for this commodity — only farmer-share data is available",
+        )
+    return breakdown
+
+
 @app.post("/api/listings")
 def create_listing(listing: ListingCreate, db: Session = Depends(get_db)):
     ref_price = COMMODITIES.get(listing.commodity, {}).get("avg_mandi_price")

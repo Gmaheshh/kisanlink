@@ -549,7 +549,13 @@
         "Upper_95": 3609.22
       }
     ],
-    "farmer_share_pct": 36.0
+    "farmer_share_pct": 36.0,
+    "stakeholder_breakdown": {
+      "farmer_pct": 36.2,
+      "trader_pct": 17.6,
+      "wholesaler_pct": 15.0,
+      "retailer_pct": 31.3
+    }
   },
   {
     "name": "Pomegranate",
@@ -641,7 +647,13 @@
         "Upper_95": 2551.37
       }
     ],
-    "farmer_share_pct": 37.0
+    "farmer_share_pct": 37.0,
+    "stakeholder_breakdown": {
+      "farmer_pct": 36.7,
+      "trader_pct": 16.2,
+      "wholesaler_pct": 16.0,
+      "retailer_pct": 31.0
+    }
   },
   {
     "name": "Rice",
@@ -788,7 +800,13 @@
         "Upper_95": 3312.44
       }
     ],
-    "farmer_share_pct": 33.0
+    "farmer_share_pct": 33.0,
+    "stakeholder_breakdown": {
+      "farmer_pct": 33.5,
+      "trader_pct": 21.3,
+      "wholesaler_pct": 16.1,
+      "retailer_pct": 29.1
+    }
   },
   {
     "name": "Turmeric",
