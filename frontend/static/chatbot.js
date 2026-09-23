@@ -83,6 +83,27 @@
       msgsEl.scrollTop = msgsEl.scrollHeight;
     }
 
+    // Voice replies must actually be heard by farmers who can't read the
+    // text -- browsers routinely block autoplay by the time a round trip to
+    // Sarvam/Claude finishes, so a real tappable control is the only
+    // guaranteed way to play the audio, not just a best-effort attempt.
+    function attachVoiceReply(container, audioBase64) {
+      const audio = new Audio('data:audio/wav;base64,' + audioBase64);
+      const playBtn = document.createElement('button');
+      playBtn.textContent = '🔊 Listen';
+      playBtn.type = 'button';
+      playBtn.style.cssText =
+        'display:block; margin-top:6px; background:#2d6a4f; color:#fff; border:none; ' +
+        'border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer;';
+      const playFromStart = () => {
+        audio.currentTime = 0;
+        audio.play().catch((e) => console.warn('KisanLink voice playback failed:', e));
+      };
+      playBtn.addEventListener('click', playFromStart);
+      container.appendChild(playBtn);
+      playFromStart(); // best-effort autoplay; the button above always works regardless
+    }
+
     async function sendText(text) {
       if (!text.trim()) return;
       addMsg('user', text);
@@ -170,8 +191,7 @@
               if (!res.ok) throw new Error(data.detail || 'Voice request failed');
               placeholder.textContent = data.reply;
               if (data.audios && data.audios[0]) {
-                const audio = new Audio('data:audio/wav;base64,' + data.audios[0]);
-                audio.play().catch(() => {});
+                attachVoiceReply(placeholder, data.audios[0]);
               }
             } catch (e) {
               placeholder.textContent = '⚠️ ' + e.message;
