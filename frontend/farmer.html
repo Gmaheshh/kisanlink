@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KisanLink — Farmer Dashboard</title>
+<link rel="stylesheet" href="/static/vendor/tailwind.css" />
+<link rel="stylesheet" href="/static/style.css" />
+<script src="/static/vendor/chart.umd.js"></script>
+</head>
+<body class="text-gray-800">
+
+<nav class="bg-white border-b sticky top-0 z-10">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">🌾</span>
+      <span class="text-xl font-bold text-green-800">KisanLink</span>
+    </div>
+    <div class="flex gap-6 text-sm font-medium">
+      <a href="/" class="navlink text-gray-600">Home</a>
+      <a href="/farmer" class="navlink text-green-700">I'm a Farmer</a>
+      <a href="/buyer" class="navlink text-gray-600">I'm a Buyer</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-6xl mx-auto px-6 py-10 grid md:grid-cols-5 gap-8">
+
+  <!-- Listing form -->
+  <div class="md:col-span-2 card p-6 h-fit">
+    <h2 class="text-lg font-bold mb-1">List Your Produce</h2>
+    <p class="text-sm text-gray-500 mb-5">Reach bulk buyers directly — no mandi commission, no middlemen.</p>
+    <form id="listingForm" class="space-y-4">
+      <div>
+        <label class="text-sm font-medium">Your Name</label>
+        <input required name="farmer_name" class="w-full border rounded-lg px-3 py-2 mt-1" placeholder="e.g. Ramesh Patil" />
+      </div>
+      <div>
+        <label class="text-sm font-medium">Phone (optional)</label>
+        <input name="phone" class="w-full border rounded-lg px-3 py-2 mt-1" placeholder="10-digit mobile" />
+      </div>
+      <div>
+        <label class="text-sm font-medium">Commodity</label>
+        <select required name="commodity" id="commoditySelect" class="w-full border rounded-lg px-3 py-2 mt-1"></select>
+      </div>
+      <div>
+        <label class="text-sm font-medium">District</label>
+        <select required name="district" id="districtSelect" class="w-full border rounded-lg px-3 py-2 mt-1"></select>
+      </div>
+      <div>
+        <label class="text-sm font-medium">Quantity (quintals)</label>
+        <input required type="number" min="1" step="0.1" name="quantity_quintal" class="w-full border rounded-lg px-3 py-2 mt-1" />
+      </div>
+      <div>
+        <label class="text-sm font-medium">Your Expected Price (Rs./quintal)</label>
+        <input required type="number" min="1" step="1" name="expected_price_per_quintal" id="priceInput" class="w-full border rounded-lg px-3 py-2 mt-1" />
+        <p id="priceHint" class="text-xs text-gray-400 mt-1"></p>
+      </div>
+
+      <div id="hubPreview" class="text-sm bg-green-50 border border-green-100 rounded-lg p-3 hidden"></div>
+
+      <button type="submit" class="btn-primary w-full py-3 rounded-lg font-semibold">List Produce</button>
+      <p id="formMsg" class="text-sm"></p>
+    </form>
+  </div>
+
+  <!-- Right column: forecast + own listings -->
+  <div class="md:col-span-3 space-y-6">
+    <div class="card p-6">
+      <h2 class="text-lg font-bold mb-1">Price Forecast — Should you sell now?</h2>
+      <p class="text-sm text-gray-500 mb-4">Based on the commodity selected on the left</p>
+      <canvas id="forecastChart" height="110"></canvas>
+      <p id="modelNote" class="text-xs text-gray-400 mt-2"></p>
+    </div>
+
+    <div class="card p-6">
+      <h2 class="text-lg font-bold mb-4">Your Listings (demo: all listings shown)</h2>
+      <div id="listingsTable" class="space-y-3"></div>
+    </div>
+  </div>
+</main>
+
+<script src="/static/app.js"></script>
+<script>
+let forecastChart;
+let commodityData = {};
+
+const DISTRICTS = ["Nashik","Pune","Nagpur","Ahmednagar","Solapur","Kolhapur","Satara","Sangli",
+  "Aurangabad","Jalgaon","Latur","Nanded","Amravati","Akola","Ratnagiri","Thane","Raigad",
+  "Buldhana","Wardha","Yavatmal"];
+
+async function init() {
+  const commodities = await apiGet('/api/commodities');
+  commodities.sort((a,b)=>a.name.localeCompare(b.name));
+  commodityData = Object.fromEntries(commodities.map(c => [c.name, c]));
+
+  const sel = document.getElementById('commoditySelect');
+  sel.innerHTML = commodities.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  sel.addEventListener('change', onCommodityChange);
+  onCommodityChange();
+
+  const distSel = document.getElementById('districtSelect');
+  distSel.innerHTML = DISTRICTS.map(d => `<option value="${d}">${d}</option>`).join('');
+  distSel.addEventListener('change', onDistrictChange);
+  onDistrictChange();
+
+  loadListings();
+}
+
+function onCommodityChange() {
+  const name = document.getElementById('commoditySelect').value;
+  const c = commodityData[name];
+  document.getElementById('priceInput').value = Math.round(c.avg_mandi_price);
+  document.getElementById('priceHint').textContent =
+    `Recent avg mandi price for ${name}: ${formatRs(c.avg_mandi_price)}/quintal. You can list higher or lower.`;
+  renderForecast(c);
+}
+
+async function onDistrictChange() {
+  const district = document.getElementById('districtSelect').value;
+  try {
+    const hub = await apiGet('/api/hub/' + encodeURIComponent(district));
+    const el = document.getElementById('hubPreview');
+    el.classList.remove('hidden');
+    el.innerHTML = `📍 Nearest collection hub: <b>${hub.hub}</b> — ${hub.distance_km} km (~${hub.estimated_transit_hours} hrs by road)`;
+  } catch (e) { /* ignore */ }
+}
+
+function renderForecast(c) {
+  const labels = c.forecast.map(f => f.Month);
+  const forecast = c.forecast.map(f => f.Forecast_Modal_Price);
+  const lower = c.forecast.map(f => f.Lower_95);
+  const upper = c.forecast.map(f => f.Upper_95);
+
+  const ctx = document.getElementById('forecastChart');
+  if (forecastChart) forecastChart.destroy();
+  forecastChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Upper 95% CI', data: upper, borderColor: 'rgba(22,163,74,0.15)', backgroundColor: 'rgba(22,163,74,0.08)', fill: '+1', pointRadius: 0 },
+        { label: 'Forecast', data: forecast, borderColor: '#16a34a', backgroundColor: '#16a34a', fill: false, tension: 0.2 },
+        { label: 'Lower 95% CI', data: lower, borderColor: 'rgba(22,163,74,0.15)', fill: false, pointRadius: 0 },
+      ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+  document.getElementById('modelNote').textContent =
+    `Model: ${c.chosen_model} · Holdout accuracy (MAPE): ${c.holdout_mape_pct}%`;
+}
+
+async function loadListings() {
+  const listings = await apiGet('/api/listings');
+  const el = document.getElementById('listingsTable');
+  if (listings.length === 0) {
+    el.innerHTML = '<p class="text-sm text-gray-400">No listings yet.</p>';
+    return;
+  }
+  el.innerHTML = listings.map(l => `
+    <div class="flex items-center justify-between border rounded-lg px-4 py-3">
+      <div>
+        <p class="font-semibold">${l.commodity} <span class="text-gray-400 font-normal">· ${l.district}</span></p>
+        <p class="text-sm text-gray-500">${l.farmer_name} · ${l.quantity_remaining}/${l.quantity_quintal} qtl left · ${formatRs(l.expected_price_per_quintal)}/qtl</p>
+      </div>
+      <span class="text-xs px-2 py-1 rounded-full ${statusBadgeClass(l.status)}">${l.status.replace('_',' ')}</span>
+    </div>
+  `).join('');
+}
+
+document.getElementById('listingForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const payload = Object.fromEntries(fd.entries());
+  payload.quantity_quintal = parseFloat(payload.quantity_quintal);
+  payload.expected_price_per_quintal = parseFloat(payload.expected_price_per_quintal);
+  const msg = document.getElementById('formMsg');
+  try {
+    await apiPost('/api/listings', payload);
+    msg.textContent = '✅ Listed successfully!';
+    msg.className = 'text-sm text-green-700';
+    e.target.reset();
+    onCommodityChange();
+    loadListings();
+  } catch (err) {
+    msg.textContent = '❌ ' + err.message;
+    msg.className = 'text-sm text-red-600';
+  }
+});
+
+init();
+</script>
+<script src="/static/chatbot.js"></script>
+</body>
+</html>

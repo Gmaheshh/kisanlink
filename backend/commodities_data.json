@@ -1,0 +1,885 @@
+[
+  {
+    "name": "Bajra (Pearl Millet)",
+    "avg_mandi_price": 1684.5,
+    "median_mandi_price": 1495.83,
+    "chosen_model": "ARIMA",
+    "holdout_mape_pct": 2.3,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 2555.5,
+        "Lower_95": 2414.66,
+        "Upper_95": 2696.33
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 2582.44,
+        "Lower_95": 2368.47,
+        "Upper_95": 2796.41
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 2505.88,
+        "Lower_95": 2232.21,
+        "Upper_95": 2779.54
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 2479.6,
+        "Lower_95": 2149.74,
+        "Upper_95": 2809.46
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 2556.21,
+        "Lower_95": 2172.81,
+        "Upper_95": 2939.61
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 2582.26,
+        "Lower_95": 2152.26,
+        "Upper_95": 3012.26
+      }
+    ],
+    "farmer_share_pct": 60.0
+  },
+  {
+    "name": "Banana",
+    "avg_mandi_price": 1018.63,
+    "median_mandi_price": 850.0,
+    "chosen_model": "SARIMA",
+    "holdout_mape_pct": 4.94,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 1790.35,
+        "Lower_95": 1433.45,
+        "Upper_95": 2147.24
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 1801.85,
+        "Lower_95": 1300.76,
+        "Upper_95": 2302.93
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 1801.13,
+        "Lower_95": 1206.55,
+        "Upper_95": 2395.7
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 1909.55,
+        "Lower_95": 1275.89,
+        "Upper_95": 2543.22
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 1940.93,
+        "Lower_95": 1283.88,
+        "Upper_95": 2597.99
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 1903.64,
+        "Lower_95": 1227.67,
+        "Upper_95": 2579.61
+      }
+    ],
+    "farmer_share_pct": 50.0
+  },
+  {
+    "name": "Brinjal",
+    "avg_mandi_price": 1739.1,
+    "median_mandi_price": 1551.0,
+    "chosen_model": "SARIMA",
+    "holdout_mape_pct": 16.31,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 2748.95,
+        "Lower_95": 1829.95,
+        "Upper_95": 3667.95
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 2900.13,
+        "Lower_95": 1931.36,
+        "Upper_95": 3868.9
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 2990.33,
+        "Lower_95": 2003.67,
+        "Upper_95": 3976.98
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 2049.61,
+        "Lower_95": 1056.56,
+        "Upper_95": 3042.67
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 1914.58,
+        "Lower_95": 919.08,
+        "Upper_95": 2910.08
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 1955.39,
+        "Lower_95": 958.88,
+        "Upper_95": 2951.9
+      }
+    ],
+    "farmer_share_pct": 50.0
+  },
+  {
+    "name": "Cauliflower",
+    "avg_mandi_price": 1295.13,
+    "median_mandi_price": 1203.18,
+    "chosen_model": "SARIMA",
+    "holdout_mape_pct": 13.92,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 1743.06,
+        "Lower_95": 1216.12,
+        "Upper_95": 2270.01
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 1538.26,
+        "Lower_95": 910.74,
+        "Upper_95": 2165.78
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 1533.64,
+        "Lower_95": 880.57,
+        "Upper_95": 2186.71
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 1306.48,
+        "Lower_95": 651.21,
+        "Upper_95": 1961.74
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 1378.12,
+        "Lower_95": 722.93,
+        "Upper_95": 2033.31
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 1559.95,
+        "Lower_95": 902.74,
+        "Upper_95": 2217.15
+      }
+    ],
+    "farmer_share_pct": 50.0
+  },
+  {
+    "name": "Cotton",
+    "avg_mandi_price": 5450.79,
+    "median_mandi_price": 5012.31,
+    "chosen_model": "SARIMA",
+    "holdout_mape_pct": 7.97,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 7100.64,
+        "Lower_95": 6255.72,
+        "Upper_95": 7945.55
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 7196.83,
+        "Lower_95": 5899.94,
+        "Upper_95": 8493.73
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 7430.44,
+        "Lower_95": 5866.97,
+        "Upper_95": 8993.91
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 7467.8,
+        "Lower_95": 5722.06,
+        "Upper_95": 9213.54
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 7584.85,
+        "Lower_95": 5706.65,
+        "Upper_95": 9463.05
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 7717.67,
+        "Lower_95": 5740.1,
+        "Upper_95": 9695.24
+      }
+    ],
+    "farmer_share_pct": null
+  },
+  {
+    "name": "Garlic",
+    "avg_mandi_price": 5907.77,
+    "median_mandi_price": 4875.0,
+    "chosen_model": "ARIMA",
+    "holdout_mape_pct": 16.02,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 6702.02,
+        "Lower_95": 4062.29,
+        "Upper_95": 9341.76
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 6843.45,
+        "Lower_95": 2586.56,
+        "Upper_95": 11100.34
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 6971.11,
+        "Lower_95": 1420.65,
+        "Upper_95": 12521.58
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 7080.94,
+        "Lower_95": 791.35,
+        "Upper_95": 13370.52
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 7177.43,
+        "Lower_95": 317.75,
+        "Upper_95": 14037.12
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 7261.43,
+        "Lower_95": -15.21,
+        "Upper_95": 14538.06
+      }
+    ],
+    "farmer_share_pct": 50.0
+  },
+  {
+    "name": "Grapes",
+    "avg_mandi_price": 4349.22,
+    "median_mandi_price": 3822.0,
+    "chosen_model": "SARIMA",
+    "holdout_mape_pct": 22.44,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 9004.96,
+        "Lower_95": 7024.43,
+        "Upper_95": 10985.49
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 7628.3,
+        "Lower_95": 4955.16,
+        "Upper_95": 10301.44
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 6492.97,
+        "Lower_95": 3624.11,
+        "Upper_95": 9361.83
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 5607.1,
+        "Lower_95": 2685.39,
+        "Upper_95": 8528.8
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 5013.74,
+        "Lower_95": 2058.33,
+        "Upper_95": 7969.16
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 4717.92,
+        "Lower_95": 1782.91,
+        "Upper_95": 7652.93
+      }
+    ],
+    "farmer_share_pct": 50.0
+  },
+  {
+    "name": "Green Chilli",
+    "avg_mandi_price": 2706.11,
+    "median_mandi_price": 2560.57,
+    "chosen_model": "ARIMA",
+    "holdout_mape_pct": 13.29,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 3484.24,
+        "Lower_95": 2218.02,
+        "Upper_95": 4750.46
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 3648.23,
+        "Lower_95": 1969.11,
+        "Upper_95": 5327.36
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 3607.7,
+        "Lower_95": 1808.53,
+        "Upper_95": 5406.86
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 3687.87,
+        "Lower_95": 1792.13,
+        "Upper_95": 5583.61
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 3663.66,
+        "Lower_95": 1729.38,
+        "Upper_95": 5597.95
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 3703.14,
+        "Lower_95": 1732.94,
+        "Upper_95": 5673.33
+      }
+    ],
+    "farmer_share_pct": 50.0
+  },
+  {
+    "name": "Groundnut",
+    "avg_mandi_price": 5896.57,
+    "median_mandi_price": 5622.2,
+    "chosen_model": "ARIMA",
+    "holdout_mape_pct": 3.96,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 5686.07,
+        "Lower_95": 4772.43,
+        "Upper_95": 6599.72
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 5791.59,
+        "Lower_95": 4451.04,
+        "Upper_95": 7132.14
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 5725.56,
+        "Lower_95": 4042.74,
+        "Upper_95": 7408.39
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 5625.34,
+        "Lower_95": 3589.23,
+        "Upper_95": 7661.45
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 5676.69,
+        "Lower_95": 3350.97,
+        "Upper_95": 8002.41
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 5770.97,
+        "Lower_95": 3236.94,
+        "Upper_95": 8305.0
+      }
+    ],
+    "farmer_share_pct": null
+  },
+  {
+    "name": "Jowar (Sorghum)",
+    "avg_mandi_price": 2032.77,
+    "median_mandi_price": 1934.9,
+    "chosen_model": "SARIMA",
+    "holdout_mape_pct": 2.95,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 2807.16,
+        "Lower_95": 2581.84,
+        "Upper_95": 3032.48
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 2816.62,
+        "Lower_95": 2457.56,
+        "Upper_95": 3175.69
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 2807.56,
+        "Lower_95": 2343.5,
+        "Upper_95": 3271.61
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 2757.68,
+        "Lower_95": 2207.23,
+        "Upper_95": 3308.13
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 2827.73,
+        "Lower_95": 2209.29,
+        "Upper_95": 3446.18
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 2862.98,
+        "Lower_95": 2176.46,
+        "Upper_95": 3549.5
+      }
+    ],
+    "farmer_share_pct": 60.0
+  },
+  {
+    "name": "Mango",
+    "avg_mandi_price": 5547.15,
+    "median_mandi_price": 4442.41,
+    "chosen_model": "ARIMA",
+    "holdout_mape_pct": 128.43,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 3556.78,
+        "Lower_95": -1375.46,
+        "Upper_95": 8489.01
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 5735.74,
+        "Lower_95": -424.65,
+        "Upper_95": 11896.13
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 6340.42,
+        "Lower_95": 38.93,
+        "Upper_95": 12641.92
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 6340.42,
+        "Lower_95": 26.55,
+        "Upper_95": 12654.29
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 6340.42,
+        "Lower_95": 14.2,
+        "Upper_95": 12666.64
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 6340.42,
+        "Lower_95": 1.88,
+        "Upper_95": 12678.97
+      }
+    ],
+    "farmer_share_pct": 50.0
+  },
+  {
+    "name": "Onion",
+    "avg_mandi_price": 1382.0,
+    "median_mandi_price": 1125.71,
+    "chosen_model": "ARIMA",
+    "holdout_mape_pct": 21.74,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 1352.52,
+        "Lower_95": 514.62,
+        "Upper_95": 2190.42
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 1515.74,
+        "Lower_95": 177.52,
+        "Upper_95": 2853.95
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 1665.37,
+        "Lower_95": 95.92,
+        "Upper_95": 3234.83
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 1768.88,
+        "Lower_95": 71.93,
+        "Upper_95": 3465.83
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 1831.2,
+        "Lower_95": 87.79,
+        "Upper_95": 3574.62
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 1853.79,
+        "Lower_95": 98.36,
+        "Upper_95": 3609.22
+      }
+    ],
+    "farmer_share_pct": 36.0
+  },
+  {
+    "name": "Pomegranate",
+    "avg_mandi_price": 4856.45,
+    "median_mandi_price": 4500.0,
+    "chosen_model": "ARIMA",
+    "holdout_mape_pct": 5.76,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 8154.04,
+        "Lower_95": 6901.98,
+        "Upper_95": 9406.1
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 8233.94,
+        "Lower_95": 6433.26,
+        "Upper_95": 10034.61
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 8297.25,
+        "Lower_95": 6163.9,
+        "Upper_95": 10430.6
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 8335.41,
+        "Lower_95": 6019.66,
+        "Upper_95": 10651.15
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 8348.39,
+        "Lower_95": 5942.91,
+        "Upper_95": 10753.86
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 8341.84,
+        "Lower_95": 5894.15,
+        "Upper_95": 10789.54
+      }
+    ],
+    "farmer_share_pct": 50.0
+  },
+  {
+    "name": "Potato",
+    "avg_mandi_price": 1309.37,
+    "median_mandi_price": 1220.0,
+    "chosen_model": "ARIMA",
+    "holdout_mape_pct": 6.6,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 1601.3,
+        "Lower_95": 1310.02,
+        "Upper_95": 1892.57
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 1619.73,
+        "Lower_95": 1063.81,
+        "Upper_95": 2175.65
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 1630.52,
+        "Lower_95": 916.22,
+        "Upper_95": 2344.81
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 1637.69,
+        "Lower_95": 828.68,
+        "Upper_95": 2446.69
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 1642.78,
+        "Lower_95": 775.41,
+        "Upper_95": 2510.16
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 1646.53,
+        "Lower_95": 741.68,
+        "Upper_95": 2551.37
+      }
+    ],
+    "farmer_share_pct": 37.0
+  },
+  {
+    "name": "Rice",
+    "avg_mandi_price": 3210.12,
+    "median_mandi_price": 3189.58,
+    "chosen_model": "ARIMA",
+    "holdout_mape_pct": 6.4,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 3879.74,
+        "Lower_95": 3464.12,
+        "Upper_95": 4295.36
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 3873.8,
+        "Lower_95": 3322.33,
+        "Upper_95": 4425.26
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 3854.57,
+        "Lower_95": 3253.29,
+        "Upper_95": 4455.86
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 3816.76,
+        "Lower_95": 3153.27,
+        "Upper_95": 4480.25
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 3806.51,
+        "Lower_95": 3086.13,
+        "Upper_95": 4526.89
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 3798.83,
+        "Lower_95": 3051.0,
+        "Upper_95": 4546.66
+      }
+    ],
+    "farmer_share_pct": 52.0
+  },
+  {
+    "name": "Soyabean",
+    "avg_mandi_price": 3683.72,
+    "median_mandi_price": 3512.32,
+    "chosen_model": "SARIMA",
+    "holdout_mape_pct": 3.3,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 4252.41,
+        "Lower_95": 3736.11,
+        "Upper_95": 4768.71
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 4365.84,
+        "Lower_95": 3466.48,
+        "Upper_95": 5265.2
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 4382.17,
+        "Lower_95": 3274.98,
+        "Upper_95": 5489.36
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 4413.61,
+        "Lower_95": 3140.92,
+        "Upper_95": 5686.3
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 4529.46,
+        "Lower_95": 3072.44,
+        "Upper_95": 5986.49
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 4759.04,
+        "Lower_95": 3139.49,
+        "Upper_95": 6378.58
+      }
+    ],
+    "farmer_share_pct": null
+  },
+  {
+    "name": "Sugarcane",
+    "avg_mandi_price": 450.76,
+    "median_mandi_price": 400.0,
+    "chosen_model": null,
+    "holdout_mape_pct": null,
+    "forecast": [],
+    "farmer_share_pct": null
+  },
+  {
+    "name": "Tomato",
+    "avg_mandi_price": 1283.26,
+    "median_mandi_price": 1060.53,
+    "chosen_model": "ARIMA",
+    "holdout_mape_pct": 22.74,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 2035.88,
+        "Lower_95": 1005.32,
+        "Upper_95": 3066.45
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 2096.13,
+        "Lower_95": 754.06,
+        "Upper_95": 3438.2
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 2070.86,
+        "Lower_95": 727.07,
+        "Upper_95": 3414.66
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 2020.16,
+        "Lower_95": 663.31,
+        "Upper_95": 3377.02
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 1968.11,
+        "Lower_95": 591.98,
+        "Upper_95": 3344.25
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 1923.09,
+        "Lower_95": 533.75,
+        "Upper_95": 3312.44
+      }
+    ],
+    "farmer_share_pct": 33.0
+  },
+  {
+    "name": "Turmeric",
+    "avg_mandi_price": 8693.11,
+    "median_mandi_price": 7743.33,
+    "chosen_model": "SARIMA",
+    "holdout_mape_pct": 11.48,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 13934.27,
+        "Lower_95": 12433.91,
+        "Upper_95": 15434.63
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 14060.63,
+        "Lower_95": 11927.88,
+        "Upper_95": 16193.38
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 14597.2,
+        "Lower_95": 12078.84,
+        "Upper_95": 17115.56
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 15210.23,
+        "Lower_95": 12371.78,
+        "Upper_95": 18048.67
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 15052.07,
+        "Lower_95": 11866.33,
+        "Upper_95": 18237.81
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 14142.5,
+        "Lower_95": 10678.68,
+        "Upper_95": 17606.32
+      }
+    ],
+    "farmer_share_pct": null
+  },
+  {
+    "name": "Wheat",
+    "avg_mandi_price": 1920.9,
+    "median_mandi_price": 1818.89,
+    "chosen_model": "SARIMA",
+    "holdout_mape_pct": 1.67,
+    "forecast": [
+      {
+        "Month": "2025-11",
+        "Forecast_Modal_Price": 2734.63,
+        "Lower_95": 2623.09,
+        "Upper_95": 2846.17
+      },
+      {
+        "Month": "2025-12",
+        "Forecast_Modal_Price": 2733.28,
+        "Lower_95": 2548.68,
+        "Upper_95": 2917.88
+      },
+      {
+        "Month": "2026-01",
+        "Forecast_Modal_Price": 2763.33,
+        "Lower_95": 2530.58,
+        "Upper_95": 2996.08
+      },
+      {
+        "Month": "2026-02",
+        "Forecast_Modal_Price": 2704.85,
+        "Lower_95": 2431.92,
+        "Upper_95": 2977.77
+      },
+      {
+        "Month": "2026-03",
+        "Forecast_Modal_Price": 2658.42,
+        "Lower_95": 2350.61,
+        "Upper_95": 2966.22
+      },
+      {
+        "Month": "2026-04",
+        "Forecast_Modal_Price": 2694.58,
+        "Lower_95": 2355.45,
+        "Upper_95": 3033.71
+      }
+    ],
+    "farmer_share_pct": 67.0
+  }
+]

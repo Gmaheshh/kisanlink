@@ -1,0 +1,34 @@
+:root {
+  --green-900: #14532d;
+  --green-700: #15803d;
+  --green-600: #16a34a;
+  --green-100: #dcfce7;
+  --amber-500: #f59e0b;
+}
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f7faf7;
+}
+.navlink {
+  transition: color 0.15s ease;
+}
+.navlink:hover {
+  color: var(--green-700);
+}
+.card {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  border: 1px solid #eef2ee;
+}
+.btn-primary {
+  background: var(--green-600);
+  color: white;
+  transition: background 0.15s ease;
+}
+.btn-primary:hover {
+  background: var(--green-700);
+}
+.badge-open { background: #dcfce7; color: #166534; }
+.badge-partial { background: #fef3c7; color: #92400e; }
+.badge-sold { background: #fee2e2; color: #991b1b; }

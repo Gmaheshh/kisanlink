@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KisanLink — Farm to Consumer, Direct</title>
+<link rel="stylesheet" href="/static/vendor/tailwind.css" />
+<link rel="stylesheet" href="/static/style.css" />
+<script src="/static/vendor/chart.umd.js"></script>
+</head>
+<body class="text-gray-800">
+
+<nav class="bg-white border-b sticky top-0 z-10">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">🌾</span>
+      <span class="text-xl font-bold text-green-800">KisanLink</span>
+    </div>
+    <div class="flex gap-6 text-sm font-medium">
+      <a href="/" class="navlink text-green-700">Home</a>
+      <a href="/farmer" class="navlink text-gray-600">I'm a Farmer</a>
+      <a href="/buyer" class="navlink text-gray-600">I'm a Buyer</a>
+    </div>
+  </div>
+</nav>
+
+<header class="bg-gradient-to-b from-green-50 to-white py-16">
+  <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+    <div>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
+        Cut out the middlemen.<br/><span class="text-green-700">Fair prices, both ends.</span>
+      </h1>
+      <p class="mt-5 text-lg text-gray-600">
+        KisanLink connects Maharashtra's farmers directly with consumers and bulk buyers —
+        with real mandi price data, AI demand forecasting, and transparent logistics.
+      </p>
+      <div class="mt-8 flex gap-4">
+        <a href="/farmer" class="btn-primary px-6 py-3 rounded-lg font-semibold">List Your Produce</a>
+        <a href="/buyer" class="px-6 py-3 rounded-lg font-semibold border border-green-600 text-green-700 hover:bg-green-50">Browse Produce</a>
+      </div>
+    </div>
+    <div class="card p-6">
+      <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">The problem, in one chart</p>
+      <p class="text-xs text-gray-400 mb-3">Farmer mandi price vs. what consumers actually pay (RBI-benchmarked, 2024)</p>
+      <canvas id="gapChart" height="220"></canvas>
+    </div>
+  </div>
+</header>
+
+<section class="max-w-6xl mx-auto px-6 py-14">
+  <div class="grid md:grid-cols-3 gap-6">
+    <div class="card p-6">
+      <div class="text-3xl mb-2">🤝</div>
+      <h3 class="font-bold text-lg mb-1">Direct connection</h3>
+      <p class="text-sm text-gray-600">Farmers and FPOs list produce directly. Bulk buyers and consumers order without a chain of middlemen.</p>
+    </div>
+    <div class="card p-6">
+      <div class="text-3xl mb-2">📈</div>
+      <h3 class="font-bold text-lg mb-1">AI price forecasting</h3>
+      <p class="text-sm text-gray-600">ARIMA/SARIMA models trained on 16 years of Maharashtra mandi data help farmers time their sales.</p>
+    </div>
+    <div class="card p-6">
+      <div class="text-3xl mb-2">🚚</div>
+      <h3 class="font-bold text-lg mb-1">Smart logistics</h3>
+      <p class="text-sm text-gray-600">Every listing gets matched to its nearest collection hub with an estimated transit time.</p>
+    </div>
+  </div>
+</section>
+
+<section class="max-w-6xl mx-auto px-6 py-14">
+  <div class="card p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-xl font-bold">6-Month Price Forecast</h2>
+        <p class="text-sm text-gray-500">Pick a commodity to see its ARIMA/SARIMA-forecasted mandi price trend</p>
+      </div>
+      <select id="commoditySelect" class="border rounded-lg px-3 py-2 text-sm"></select>
+    </div>
+    <canvas id="forecastChart" height="90"></canvas>
+    <p id="modelNote" class="text-xs text-gray-400 mt-2"></p>
+  </div>
+</section>
+
+<footer class="bg-white border-t py-8 text-center text-sm text-gray-400">
+  KisanLink — SIH 2026 Prototype · Problem Statement 26033 · Data: Agmarknet / CEDA / RBI
+</footer>
+
+<script src="/static/app.js"></script>
+<script>
+let gapChart, forecastChart;
+
+async function loadGapChart() {
+  const commodities = await apiGet('/api/commodities');
+  const key = { Onion: 36, Tomato: 33, Potato: 37 };
+  const labels = Object.keys(key);
+  const farmerPct = Object.values(key);
+  const consumerPct = farmerPct.map(p => 100 - p);
+
+  const ctx = document.getElementById('gapChart');
+  gapChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Farmer share', data: farmerPct, backgroundColor: '#16a34a', stack: 's' },
+        { label: 'Middlemen + retail markup', data: consumerPct, backgroundColor: '#f59e0b', stack: 's' },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, ticks: { callback: v => v + '%' } }
+      }
+    }
+  });
+}
+
+async function loadCommodityDropdown() {
+  const commodities = await apiGet('/api/commodities');
+  const sel = document.getElementById('commoditySelect');
+  commodities.sort((a,b) => a.name.localeCompare(b.name));
+  sel.innerHTML = commodities.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  sel.value = 'Onion';
+  sel.addEventListener('change', () => loadForecast(sel.value));
+  loadForecast(sel.value);
+}
+
+async function loadForecast(name) {
+  const c = await apiGet('/api/commodities/' + encodeURIComponent(name));
+  const labels = c.forecast.map(f => f.Month);
+  const forecast = c.forecast.map(f => f.Forecast_Modal_Price);
+  const lower = c.forecast.map(f => f.Lower_95);
+  const upper = c.forecast.map(f => f.Upper_95);
+
+  const ctx = document.getElementById('forecastChart');
+  if (forecastChart) forecastChart.destroy();
+  forecastChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Upper 95% CI', data: upper, borderColor: 'rgba(220,38,38,0.15)', backgroundColor: 'rgba(220,38,38,0.08)', fill: '+1', pointRadius: 0 },
+        { label: 'Forecast', data: forecast, borderColor: '#dc2626', backgroundColor: '#dc2626', fill: false, tension: 0.2 },
+        { label: 'Lower 95% CI', data: lower, borderColor: 'rgba(220,38,38,0.15)', fill: false, pointRadius: 0 },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { y: { title: { display: true, text: 'Rs. per quintal' } } }
+    }
+  });
+
+  document.getElementById('modelNote').textContent =
+    `Model: ${c.chosen_model} · Holdout MAPE: ${c.holdout_mape_pct}% · Avg mandi price: ${formatRs(c.avg_mandi_price)}/quintal`;
+}
+
+loadGapChart();
+loadCommodityDropdown();
+</script>
+<script src="/static/chatbot.js"></script>
+</body>
+</html>

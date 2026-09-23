@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KisanLink — Buyer Marketplace</title>
+<link rel="stylesheet" href="/static/vendor/tailwind.css" />
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="text-gray-800">
+
+<nav class="bg-white border-b sticky top-0 z-10">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">🌾</span>
+      <span class="text-xl font-bold text-green-800">KisanLink</span>
+    </div>
+    <div class="flex gap-6 text-sm font-medium">
+      <a href="/" class="navlink text-gray-600">Home</a>
+      <a href="/farmer" class="navlink text-gray-600">I'm a Farmer</a>
+      <a href="/buyer" class="navlink text-green-700">I'm a Buyer</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-6xl mx-auto px-6 py-10">
+
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold">Browse Fresh Produce</h1>
+      <p class="text-sm text-gray-500">Buy directly from farmers — no mandi commission, transparent pricing.</p>
+    </div>
+    <div class="flex gap-3">
+      <select id="filterCommodity" class="border rounded-lg px-3 py-2 text-sm">
+        <option value="">All commodities</option>
+      </select>
+      <select id="filterDistrict" class="border rounded-lg px-3 py-2 text-sm">
+        <option value="">All districts</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="listingsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+  <p id="emptyMsg" class="text-sm text-gray-400 hidden">No listings match your filters.</p>
+</main>
+
+<!-- Order modal -->
+<div id="orderModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-20 p-4">
+  <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative">
+    <button id="closeModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl leading-none">&times;</button>
+    <h3 class="text-lg font-bold mb-1">Place Order</h3>
+    <p id="modalListingInfo" class="text-sm text-gray-500 mb-4"></p>
+
+    <div id="modalSavings" class="bg-green-50 border border-green-100 rounded-lg p-3 text-sm mb-4 hidden"></div>
+
+    <form id="orderForm" class="space-y-4">
+      <input type="hidden" name="listing_id" id="orderListingId" />
+      <div>
+        <label class="text-sm font-medium">Your Name / Business</label>
+        <input required name="buyer_name" class="w-full border rounded-lg px-3 py-2 mt-1" placeholder="e.g. Dadar Fresh Mart" />
+      </div>
+      <div>
+        <label class="text-sm font-medium">Buyer Type</label>
+        <select required name="buyer_type" class="w-full border rounded-lg px-3 py-2 mt-1">
+          <option value="consumer">Individual Consumer</option>
+          <option value="bulk_buyer" selected>Bulk Buyer / Retailer / FPO</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-sm font-medium">Quantity to Order (quintals)</label>
+        <input required type="number" min="0.1" step="0.1" name="quantity_ordered" id="orderQty" class="w-full border rounded-lg px-3 py-2 mt-1" />
+        <p id="qtyHint" class="text-xs text-gray-400 mt-1"></p>
+      </div>
+      <div>
+        <label class="text-sm font-medium">Your Offer Price (Rs./quintal)</label>
+        <input required type="number" min="1" step="1" name="offer_price_per_quintal" id="orderPrice" class="w-full border rounded-lg px-3 py-2 mt-1" />
+      </div>
+      <button type="submit" class="btn-primary w-full py-3 rounded-lg font-semibold">Confirm Order</button>
+      <p id="orderMsg" class="text-sm"></p>
+    </form>
+
+    <div id="orderConfirm" class="hidden text-sm space-y-2"></div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+<script>
+let allListings = [];
+let commodityData = {};
+let currentListing = null;
+
+async function init() {
+  const commodities = await apiGet('/api/commodities');
+  commodityData = Object.fromEntries(commodities.map(c => [c.name, c]));
+
+  const cSel = document.getElementById('filterCommodity');
+  const names = [...new Set(commodities.map(c => c.name))].sort();
+  cSel.innerHTML += names.map(n => `<option value="${n}">${n}</option>`).join('');
+  cSel.addEventListener('change', render);
+
+  const dSel = document.getElementById('filterDistrict');
+  dSel.addEventListener('change', render);
+
+  await loadListings();
+}
+
+async function loadListings() {
+  allListings = await apiGet('/api/listings');
+
+  const dSel = document.getElementById('filterDistrict');
+  const districts = [...new Set(allListings.map(l => l.district))].sort();
+  dSel.innerHTML = '<option value="">All districts</option>' +
+    districts.map(d => `<option value="${d}">${d}</option>`).join('');
+
+  render();
+}
+
+function render() {
+  const commodity = document.getElementById('filterCommodity').value;
+  const district = document.getElementById('filterDistrict').value;
+
+  const filtered = allListings.filter(l =>
+    l.status !== 'sold_out' &&
+    (!commodity || l.commodity === commodity) &&
+    (!district || l.district === district)
+  );
+
+  const grid = document.getElementById('listingsGrid');
+  const emptyMsg = document.getElementById('emptyMsg');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    emptyMsg.classList.remove('hidden');
+    return;
+  }
+  emptyMsg.classList.add('hidden');
+
+  grid.innerHTML = filtered.map(l => {
+    const ref = commodityData[l.commodity];
+    const refPrice = ref ? ref.avg_mandi_price : l.mandi_reference_price;
+    const diffPct = refPrice ? Math.round(((l.expected_price_per_quintal - refPrice) / refPrice) * 100) : null;
+    const diffLabel = diffPct === null ? '' :
+      diffPct <= 0
+        ? `<span class="text-green-700">${Math.abs(diffPct)}% below mandi avg</span>`
+        : `<span class="text-amber-600">${diffPct}% above mandi avg</span>`;
+
+    return `
+    <div class="card p-5 flex flex-col justify-between">
+      <div>
+        <div class="flex items-start justify-between mb-1">
+          <h3 class="font-bold text-lg">${l.commodity}</h3>
+          <span class="text-xs px-2 py-1 rounded-full ${statusBadgeClass(l.status)}">${l.status.replace('_',' ')}</span>
+        </div>
+        <p class="text-sm text-gray-500 mb-3">${l.farmer_name} · ${l.district}</p>
+        <p class="text-2xl font-bold text-gray-900">${formatRs(l.expected_price_per_quintal)}<span class="text-sm font-normal text-gray-400">/quintal</span></p>
+        <p class="text-xs mt-1">${diffLabel}</p>
+        <p class="text-sm text-gray-500 mt-3">${l.quantity_remaining} of ${l.quantity_quintal} quintals available</p>
+      </div>
+      <button onclick="openOrderModal(${l.id})" class="btn-primary w-full py-2.5 rounded-lg font-semibold mt-4">Order Now</button>
+    </div>`;
+  }).join('');
+}
+
+function openOrderModal(listingId) {
+  currentListing = allListings.find(l => l.id === listingId);
+  if (!currentListing) return;
+
+  document.getElementById('orderForm').reset();
+  document.getElementById('orderForm').classList.remove('hidden');
+  document.getElementById('orderConfirm').classList.add('hidden');
+  document.getElementById('orderMsg').textContent = '';
+
+  document.getElementById('orderListingId').value = currentListing.id;
+  document.getElementById('modalListingInfo').textContent =
+    `${currentListing.commodity} from ${currentListing.farmer_name}, ${currentListing.district} · ${currentListing.quantity_remaining} qtl available`;
+  document.getElementById('orderQty').max = currentListing.quantity_remaining;
+  document.getElementById('qtyHint').textContent = `Max available: ${currentListing.quantity_remaining} quintals`;
+  document.getElementById('orderPrice').value = currentListing.expected_price_per_quintal;
+
+  updateSavingsPreview();
+
+  document.getElementById('orderModal').classList.remove('hidden');
+  document.getElementById('orderModal').classList.add('flex');
+}
+
+async function updateSavingsPreview() {
+  if (!currentListing) return;
+  try {
+    const savings = await apiGet(`/api/savings?commodity=${encodeURIComponent(currentListing.commodity)}&farmer_price=${currentListing.expected_price_per_quintal}`);
+    const el = document.getElementById('modalSavings');
+    el.classList.remove('hidden');
+    el.innerHTML = `Traditional supply chain: <b>${formatRs(savings.traditional_consumer_price)}</b>/qtl vs KisanLink: <b>${formatRs(savings.platform_consumer_price)}</b>/qtl —
+      <span class="text-green-700 font-semibold">save ~${savings.consumer_savings_pct}%</span>`;
+  } catch (e) { /* ignore if unavailable */ }
+}
+
+document.getElementById('closeModal').addEventListener('click', () => {
+  document.getElementById('orderModal').classList.add('hidden');
+  document.getElementById('orderModal').classList.remove('flex');
+});
+
+document.getElementById('orderForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const payload = Object.fromEntries(fd.entries());
+  payload.listing_id = parseInt(payload.listing_id);
+  payload.quantity_ordered = parseFloat(payload.quantity_ordered);
+  payload.offer_price_per_quintal = parseFloat(payload.offer_price_per_quintal);
+
+  const msg = document.getElementById('orderMsg');
+  try {
+    const result = await apiPost('/api/orders', payload);
+    const order = result.order;
+    document.getElementById('orderForm').classList.add('hidden');
+    const confirm = document.getElementById('orderConfirm');
+    confirm.classList.remove('hidden');
+    confirm.innerHTML = `
+      <p class="text-green-700 font-semibold text-base">✅ Order placed!</p>
+      <p>Order #${order.id} · ${order.quantity_ordered} qtl of ${currentListing.commodity} @ ${formatRs(order.offer_price_per_quintal)}/qtl</p>
+      <p>Total: <b>${formatRs(order.total_amount)}</b></p>
+      ${result.logistics ? `<p class="pt-2 border-t mt-2">📍 Nearest hub: <b>${result.logistics.hub}</b> — ${result.logistics.distance_km} km (~${result.logistics.estimated_transit_hours} hrs)</p>` : ''}
+      ${result.savings ? `<p class="text-green-700">💰 You saved ~${result.savings.consumer_savings_pct}% vs. traditional supply chain</p>` : ''}
+    `;
+    await loadListings();
+  } catch (err) {
+    msg.textContent = '❌ ' + err.message;
+    msg.className = 'text-sm text-red-600';
+  }
+});
+
+init();
+</script>
+<script src="/static/chatbot.js"></script>
+</body>
+</html>
