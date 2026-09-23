@@ -54,6 +54,12 @@
     <div id="routesList" class="grid md:grid-cols-2 gap-4"></div>
   </div>
 
+  <div id="fpoPanel" class="card p-5 mb-8 hidden">
+    <h2 class="font-bold text-lg mb-1">🤝 Bulk / FPO Listings</h2>
+    <p class="text-xs text-gray-500 mb-4">Multiple farmers under the same FPO/farmer group, combined into one bulk option.</p>
+    <div id="fpoList" class="grid md:grid-cols-2 gap-4"></div>
+  </div>
+
   <div id="listingsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
   <p id="emptyMsg" class="text-sm text-gray-400 hidden">No listings match your filters.</p>
 </main>
@@ -115,12 +121,36 @@ async function init() {
   const cSel = document.getElementById('filterCommodity');
   const names = [...new Set(commodities.map(c => c.name))].sort();
   cSel.innerHTML += names.map(n => `<option value="${n}">${n}</option>`).join('');
-  cSel.addEventListener('change', render);
+  cSel.addEventListener('change', () => { render(); loadFpoGroups(); });
 
   const dSel = document.getElementById('filterDistrict');
   dSel.addEventListener('change', render);
 
   await loadListings();
+  loadFpoGroups();
+}
+
+async function loadFpoGroups() {
+  const panel = document.getElementById('fpoPanel');
+  const commodity = document.getElementById('filterCommodity').value;
+  if (!commodity) {
+    panel.classList.add('hidden');
+    return;
+  }
+  try {
+    const groups = await apiGet(`/api/listings/grouped-by-fpo?commodity=${encodeURIComponent(commodity)}`);
+    if (!groups || groups.length === 0) {
+      panel.classList.add('hidden');
+      return;
+    }
+    document.getElementById('fpoList').innerHTML = groups.map(g => `
+      <div class="border rounded-lg p-4">
+        <p class="font-semibold text-sm">${g.fpo_name}</p>
+        <p class="text-sm text-gray-600 mt-1">${g.farmer_count} farmer${g.farmer_count === 1 ? '' : 's'} · ${g.quantity_remaining} qtl of ${g.commodity} available</p>
+        <p class="text-xs text-gray-400 mt-1">${g.listing_ids.length} listing${g.listing_ids.length === 1 ? '' : 's'} combined</p>
+      </div>`).join('');
+    panel.classList.remove('hidden');
+  } catch (e) { panel.classList.add('hidden'); }
 }
 
 async function loadConsolidatedRoutes() {
@@ -195,14 +225,21 @@ function render() {
         ? `<span class="text-green-700">${Math.abs(diffPct)}% below mandi avg</span>`
         : `<span class="text-amber-600">${diffPct}% above mandi avg</span>`;
 
+    const gradeTagClass = l.grade === 'A' ? 'bg-green-100 text-green-700'
+      : l.grade === 'B' ? 'bg-amber-100 text-amber-700'
+      : l.grade === 'C' ? 'bg-gray-100 text-gray-600' : '';
+
     return `
     <div class="card p-5 flex flex-col justify-between">
       <div>
+        ${l.photo_url ? `<img src="${l.photo_url}" alt="${l.commodity} photo" class="w-full h-32 object-cover rounded-lg mb-3" />` : ''}
         <div class="flex items-start justify-between mb-1">
-          <h3 class="font-bold text-lg">${l.commodity}</h3>
+          <h3 class="font-bold text-lg">${l.commodity} ${l.grade ? `<span class="text-xs px-2 py-0.5 rounded-full ${gradeTagClass} font-semibold align-middle">Grade ${l.grade}</span>` : ''}</h3>
           <span class="text-xs px-2 py-1 rounded-full ${statusBadgeClass(l.status)}">${l.status.replace('_',' ')}</span>
         </div>
-        <p class="text-sm text-gray-500 mb-3">${l.farmer_name} · ${l.district}</p>
+        <p class="text-sm text-gray-500 mb-3">${l.farmer_name} · ${l.district}
+          ${l.farmer_completed_orders > 0 ? `<span class="ml-1 text-xs text-green-700 font-medium">✓ ${l.farmer_completed_orders} completed order${l.farmer_completed_orders === 1 ? '' : 's'}</span>` : ''}
+        </p>
         <p class="text-2xl font-bold text-gray-900">${formatRs(l.expected_price_per_quintal)}<span class="text-sm font-normal text-gray-400">/quintal</span></p>
         <p class="text-xs mt-1">${diffLabel}</p>
         <p class="text-sm text-gray-500 mt-3">${l.quantity_remaining} of ${l.quantity_quintal} quintals available</p>

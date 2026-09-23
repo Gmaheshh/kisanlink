@@ -9,10 +9,11 @@ Connects farmers/FPOs directly with consumers and bulk buyers, with:
 """
 import json
 import os
+import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -26,6 +27,8 @@ from assistant import router as assistant_router
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, "..", "frontend")
+UPLOADS_DIR = os.path.join(FRONTEND_DIR, "static", "uploads")
+os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -50,6 +53,9 @@ class ListingCreate(BaseModel):
     district: str
     quantity_quintal: float
     expected_price_per_quintal: float
+    grade: Optional[str] = None
+    photo_url: Optional[str] = None
+    fpo_name: Optional[str] = None
 
 
 class OrderCreate(BaseModel):
@@ -98,6 +104,51 @@ def get_commodity(name: str):
     if not c:
         raise HTTPException(404, "Commodity not found")
     return c
+
+
+@app.get("/api/price-advice/{commodity}")
+def get_price_advice(commodity: str):
+    """Sell-now-vs-wait advice: compares the average forecasted price over
+    the next 2 months to the recent average mandi price. This function is
+    the single source of truth for the hold/sell threshold (5%) -- nothing
+    else in the app should re-implement this rule."""
+    c = COMMODITIES.get(commodity)
+    if not c:
+        raise HTTPException(404, "Commodity not found")
+    forecast = c.get("forecast") or []
+    if len(forecast) < 2:
+        raise HTTPException(404, "Not enough forecast data for this commodity")
+
+    next_two = forecast[:2]
+    avg_next_two = sum(f["Forecast_Modal_Price"] for f in next_two) / len(next_two)
+    avg_mandi_price = c["avg_mandi_price"]
+    pct_change = round((avg_next_two - avg_mandi_price) / avg_mandi_price * 100, 1)
+
+    months = " and ".join(f["Month"] for f in next_two)
+    if pct_change > 5:
+        recommendation = "hold"
+        reason = (
+            f"The average forecasted price for {months} is Rs.{round(avg_next_two, 2)}/quintal, "
+            f"{pct_change}% above the recent average mandi price of Rs.{avg_mandi_price}/quintal -- "
+            "prices are expected to rise, so waiting may pay off."
+        )
+    else:
+        recommendation = "sell_now"
+        direction = "above" if pct_change >= 0 else "below"
+        reason = (
+            f"The average forecasted price for {months} is Rs.{round(avg_next_two, 2)}/quintal, "
+            f"only {abs(pct_change)}% {direction} the recent average mandi price of Rs.{avg_mandi_price}/quintal -- "
+            "not enough expected upside to justify waiting, so selling now is reasonable."
+        )
+
+    return {
+        "commodity": commodity,
+        "recommendation": recommendation,
+        "reason": reason,
+        "avg_mandi_price": avg_mandi_price,
+        "next_2_month_avg_forecast": round(avg_next_two, 2),
+        "pct_change": pct_change,
+    }
 
 
 @app.get("/api/districts")
@@ -169,8 +220,27 @@ def get_stakeholder_breakdown(commodity: str):
     return breakdown
 
 
+ALLOWED_PHOTO_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+
+
+@app.post("/api/upload-photo")
+async def upload_photo(photo: UploadFile = File(...)):
+    """Save an uploaded listing photo to static/uploads and return its URL.
+    Simple local-disk storage -- no cloud storage needed at this scale."""
+    ext = os.path.splitext(photo.filename or "")[1].lower()
+    if ext not in ALLOWED_PHOTO_EXTENSIONS:
+        raise HTTPException(400, "Photo must be one of: " + ", ".join(sorted(ALLOWED_PHOTO_EXTENSIONS)))
+    filename = f"{uuid.uuid4().hex}{ext}"
+    dest_path = os.path.join(UPLOADS_DIR, filename)
+    with open(dest_path, "wb") as f:
+        f.write(await photo.read())
+    return {"photo_url": f"/static/uploads/{filename}"}
+
+
 @app.post("/api/listings")
 def create_listing(listing: ListingCreate, db: Session = Depends(get_db)):
+    if listing.grade and listing.grade not in ("A", "B", "C"):
+        raise HTTPException(400, "grade must be one of A, B, C")
     ref_price = COMMODITIES.get(listing.commodity, {}).get("avg_mandi_price")
     obj = models.Listing(
         farmer_name=listing.farmer_name,
@@ -180,11 +250,14 @@ def create_listing(listing: ListingCreate, db: Session = Depends(get_db)):
         quantity_quintal=listing.quantity_quintal,
         expected_price_per_quintal=listing.expected_price_per_quintal,
         mandi_reference_price=ref_price,
+        grade=listing.grade,
+        photo_url=listing.photo_url,
+        fpo_name=listing.fpo_name,
     )
     db.add(obj)
     db.commit()
     db.refresh(obj)
-    return _listing_to_dict(obj)
+    return _listing_to_dict(obj, db)
 
 
 @app.get("/api/listings")
@@ -198,7 +271,50 @@ def get_listings(commodity: Optional[str] = None, district: Optional[str] = None
     if status:
         q = q.filter(models.Listing.status == status)
     listings = q.order_by(models.Listing.created_at.desc()).all()
-    return [_listing_to_dict(l) for l in listings]
+    return [_listing_to_dict(l, db) for l in listings]
+
+
+@app.get("/api/listings/grouped-by-fpo")
+def get_listings_grouped_by_fpo(commodity: str, db: Session = Depends(get_db)):
+    """Group open/partially-sold listings that share both commodity and an
+    FPO/farmer-group name into one bulk option, e.g. so a buyer can see
+    "12 farmers under Sahyadri FPO have 340 quintals of onion available"
+    instead of 12 separate small listings. Registered before
+    /api/listings/{listing_id} so "grouped-by-fpo" isn't swallowed as a
+    listing_id path parameter."""
+    listings = (
+        db.query(models.Listing)
+        .filter(models.Listing.commodity == commodity)
+        .filter(models.Listing.status.in_(["open", "partially_sold"]))
+        .filter(models.Listing.fpo_name.isnot(None))
+        .filter(models.Listing.fpo_name != "")
+        .all()
+    )
+
+    groups = {}
+    for l in listings:
+        already_ordered = sum(o.quantity_ordered for o in l.orders)
+        remaining = l.quantity_quintal - already_ordered
+        group = groups.setdefault(l.fpo_name, {
+            "fpo_name": l.fpo_name,
+            "farmer_names": set(),
+            "listing_ids": [],
+            "quantity_remaining": 0.0,
+        })
+        group["farmer_names"].add(l.farmer_name)
+        group["listing_ids"].append(l.id)
+        group["quantity_remaining"] += remaining
+
+    return [
+        {
+            "fpo_name": g["fpo_name"],
+            "commodity": commodity,
+            "farmer_count": len(g["farmer_names"]),
+            "listing_ids": g["listing_ids"],
+            "quantity_remaining": round(g["quantity_remaining"], 1),
+        }
+        for g in groups.values()
+    ]
 
 
 @app.get("/api/listings/{listing_id}")
@@ -206,7 +322,7 @@ def get_listing(listing_id: int, db: Session = Depends(get_db)):
     obj = db.query(models.Listing).filter(models.Listing.id == listing_id).first()
     if not obj:
         raise HTTPException(404, "Listing not found")
-    return _listing_to_dict(obj)
+    return _listing_to_dict(obj, db)
 
 
 @app.post("/api/orders")
@@ -275,8 +391,17 @@ def get_orders(db: Session = Depends(get_db)):
     return result
 
 
-def _listing_to_dict(listing: models.Listing):
+def _listing_to_dict(listing: models.Listing, db: Session):
     already_ordered = sum(o.quantity_ordered for o in listing.orders)
+    # Trust indicator: how many of this farmer's listings have already sold
+    # (fully or partially) -- computed fresh each time, not stored, since a
+    # single query per listing is cheap at this data size.
+    completed_count = (
+        db.query(models.Listing)
+        .filter(models.Listing.farmer_name == listing.farmer_name)
+        .filter(models.Listing.status.in_(["sold", "partially_sold"]))
+        .count()
+    )
     return {
         "id": listing.id,
         "farmer_name": listing.farmer_name,
@@ -287,8 +412,12 @@ def _listing_to_dict(listing: models.Listing):
         "quantity_remaining": listing.quantity_quintal - already_ordered,
         "expected_price_per_quintal": listing.expected_price_per_quintal,
         "mandi_reference_price": listing.mandi_reference_price,
+        "grade": listing.grade,
+        "photo_url": listing.photo_url,
+        "fpo_name": listing.fpo_name,
         "status": listing.status,
         "created_at": listing.created_at.isoformat(),
+        "farmer_completed_orders": completed_count,
     }
 
 

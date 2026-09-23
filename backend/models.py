@@ -16,6 +16,9 @@ class Listing(Base):
     quantity_quintal = Column(Float, nullable=False)
     expected_price_per_quintal = Column(Float, nullable=False)
     mandi_reference_price = Column(Float, nullable=True)
+    grade = Column(String, nullable=True)  # "A", "B", "C" -- optional quality grade
+    photo_url = Column(String, nullable=True)
+    fpo_name = Column(String, nullable=True)  # free-text FPO / farmer-group name, optional
     status = Column(String, default="open")  # open, partially_sold, sold
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
